@@ -4,6 +4,11 @@ import json
 import os
 import time
 import hashlib
+import logging
+
+# Set up logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 CHAT_HISTORY_FILE = "chat_history.json"
 UPDATE_INTERVAL = 1  # seconds
@@ -25,7 +30,6 @@ def write_chat_history(messages):
 
 # Function to generate a unique emoji based on username
 def generate_user_icon(username):
-    # Hash the username to get a consistent, but unique result
     hash_value = int(hashlib.md5(username.encode()).hexdigest(), 16)
     emoji_index = hash_value % len(EMOJI_LIST)
     return EMOJI_LIST[emoji_index]
@@ -38,7 +42,7 @@ EMOJI_LIST = [
 
 # Setting page layout
 st.set_page_config(
-    page_title="Multithread Chatbot with Toolhouse AI, Fetch AI, and Groq lama3-8b-8192 model",
+    page_title="Multithread Chatbot with Groq lama3-8b-8192 model",
     page_icon="✨",
     layout="centered",
     initial_sidebar_state="expanded"
@@ -56,8 +60,14 @@ if not groq_api_key:
 elif not username:
     st.sidebar.info("Please enter a username to continue.", icon="🗣️")
 else:
-    # Create a Groq client
-    client = Groq(api_key=groq_api_key)
+    try:
+        # Create a Groq client
+        client = Groq(api_key=groq_api_key)
+        logger.info("Groq client created successfully")
+    except Exception as e:
+        st.error(f"Error creating Groq client: {str(e)}")
+        logger.error(f"Error creating Groq client: {str(e)}")
+        st.stop()
 
     # Generate a unique icon for the user
     user_icon = generate_user_icon(username)
@@ -76,7 +86,6 @@ else:
         role = message.get("role", "user")
         sender_name = message.get("sender_name", "")
 
-        # Format the chat display with hover effect for the icon
         st.markdown(f"""
             <div style="display: flex; align-items: center; margin-bottom: 8px;">
                 <div style="position: relative;">
@@ -94,7 +103,6 @@ else:
         chatroom_messages.append({"role": "user", "icon": user_icon, "content": f"{prompt}", "sender_name": username})
         write_chat_history(chatroom_messages)
 
-        # Display the user's message immediately
         st.markdown(f"""
             <div style="display: flex; align-items: center; margin-bottom: 8px;">
                 <div style="position: relative;">
@@ -108,33 +116,39 @@ else:
 
         # Check if the prompt starts with "nurt"
         if prompt.lower().startswith("nurt"):
-            # Generate a response using the Groq API
-            response = client.chat.completions.create(
-                model="lama3-8b-8192",  # Adjust the model name as per Groq's offerings
-                messages=[
-                    {"role": m["role"], "content": m["content"]}
-                    for m in chatroom_messages
-                ],
-            )
+            try:
+                logger.info("Sending request to Groq API")
+                # Generate a response using the Groq API
+                response = client.chat.completions.create(
+                    model="llama2-70b-4096",  # Updated model name
+                    messages=[
+                        {"role": m["role"], "content": m["content"]}
+                        for m in chatroom_messages
+                    ],
+                )
+                logger.info("Received response from Groq API")
 
-            # Extract the assistant's response from the Groq response object
-            assistant_message = response.choices[0].message.content
+                # Extract the assistant's response from the Groq response object
+                assistant_message = response.choices[0].message.content
+                logger.info(f"Assistant message: {assistant_message}")
 
-            # Add the assistant's message to the chat history and display it
-            chatroom_messages.append({"role": "assistant", "icon": "🤖", "content": f"{assistant_message}"})
-            write_chat_history(chatroom_messages)
+                # Add the assistant's message to the chat history and display it
+                chatroom_messages.append({"role": "assistant", "icon": "🤖", "content": f"{assistant_message}"})
+                write_chat_history(chatroom_messages)
 
-            # Display the assistant's message immediately
-            st.markdown(f"""
-                <div style="display: flex; align-items: center; margin-bottom: 8px;">
-                    <div style="position: relative;">
-                        <span style="font-size: 24px; margin-right: 8px; cursor:pointer;" title="Assistant">🤖</span>
+                st.markdown(f"""
+                    <div style="display: flex; align-items: center; margin-bottom: 8px;">
+                        <div style="position: relative;">
+                            <span style="font-size: 24px; margin-right: 8px; cursor:pointer;" title="Assistant">🤖</span>
+                        </div>
+                        <div style="background-color: #e1f5fe; padding: 8px; border-radius: 8px;">
+                            {assistant_message}
+                        </div>
                     </div>
-                    <div style="background-color: #e1f5fe; padding: 8px; border-radius: 8px;">
-                        {assistant_message}
-                    </div>
-                </div>
-            """, unsafe_allow_html=True)
+                """, unsafe_allow_html=True)
+            except Exception as e:
+                st.error(f"Error generating response: {str(e)}")
+                logger.error(f"Error generating response: {str(e)}")
 
     # Calendly
     st.sidebar.markdown("""
