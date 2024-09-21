@@ -42,7 +42,7 @@ EMOJI_LIST = [
 
 # Setting page layout
 st.set_page_config(
-    page_title="Multithread Chatbot with Groq lama3-8b-8192 model",
+    page_title="Multithread Chatbot with Groq llama3-8b-8192 model",
     page_icon="✨",
     layout="centered",
     initial_sidebar_state="expanded"
@@ -120,7 +120,7 @@ else:
                 logger.info("Sending request to Groq API")
                 # Generate a response using the Groq API
                 response = client.chat.completions.create(
-                    model="llama2-70b-4096",  # Updated model name
+                    model="llama3-8b-8192",  # Updated model name
                     messages=[
                         {"role": m["role"], "content": m["content"]}
                         for m in chatroom_messages
