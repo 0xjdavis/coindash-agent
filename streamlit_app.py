@@ -1,5 +1,5 @@
 import streamlit as st
-from openai import OpenAI
+from groq import Groq
 import json
 import os
 import time
@@ -38,7 +38,7 @@ EMOJI_LIST = [
 
 # Setting page layout
 st.set_page_config(
-    page_title="Multithread Chatbot with OpenAI GPT 3.5",
+    page_title="Multithread Chatbot with Toolhouse AI, Fetch AI, and Groq lama3-8b-8192 model",
     page_icon="✨",
     layout="centered",
     initial_sidebar_state="expanded"
@@ -46,27 +46,27 @@ st.set_page_config(
 
 # Sidebar for API Key and User Info
 st.sidebar.header("About App")
-st.sidebar.markdown('This is a multithreaded chatbot with OpenAI GPT 3.5 capable of iteration where the chatbot only responds when triggered created by <a href="https://ai.jdavis.xyz" target="_blank">0xjdavis</a>.', unsafe_allow_html=True)
+st.sidebar.markdown('This is a multithreaded chatbot with Groq, capable of iteration where the chatbot only responds when triggered created by <a href="https://ai.jdavis.xyz" target="_blank">0xjdavis</a>.', unsafe_allow_html=True)
 
-openai_api_key = st.sidebar.text_input("OpenAI API Key", type="password")
+groq_api_key = st.sidebar.text_input("Groq API Key", type="password")
 username = st.sidebar.text_input("Enter your username:")
 
-if not openai_api_key:
-    st.sidebar.info("Please add your OpenAI API key to continue.", icon="🗝️")
+if not groq_api_key:
+    st.sidebar.info("Please add your Groq API key to continue.", icon="🗝️")
 elif not username:
     st.sidebar.info("Please enter a username to continue.", icon="🗣️")
 else:
-    # Create an OpenAI client.
-    client = OpenAI(api_key=openai_api_key)
+    # Create a Groq client
+    client = Groq(api_key=groq_api_key)
 
-    # Generate a unique icon for the user.
+    # Generate a unique icon for the user
     user_icon = generate_user_icon(username)
 
-    # Load the chat history from the file.
+    # Load the chat history from the file
     chatroom_messages = read_chat_history()
 
-    # Show title and description.
-    st.title("Multithread Chatbot with OpenAI GPT 3.5")
+    # Show title and description
+    st.title("Multithread Chatbot with Groq")
     st.write("This is a multi-user chatroom where one participant is an AI chatbot.")
 
     # Display all chatroom messages with user icons and tooltips
@@ -88,9 +88,9 @@ else:
             </div>
         """, unsafe_allow_html=True)
 
-    # Create a chat input field for user input.
+    # Create a chat input field for user input
     if prompt := st.chat_input("What's on your mind?"):
-        # Add the user's message to the chat history and display it.
+        # Add the user's message to the chat history and display it
         chatroom_messages.append({"role": "user", "icon": user_icon, "content": f"{prompt}", "sender_name": username})
         write_chat_history(chatroom_messages)
 
@@ -108,19 +108,19 @@ else:
 
         # Check if the prompt starts with "nurt"
         if prompt.lower().startswith("nurt"):
-            # Generate a response using the OpenAI API.
+            # Generate a response using the Groq API
             response = client.chat.completions.create(
-                model="gpt-3.5-turbo",
+                model="lama3-8b-8192",  # Adjust the model name as per Groq's offerings
                 messages=[
                     {"role": m["role"], "content": m["content"]}
                     for m in chatroom_messages
                 ],
             )
 
-            # Extract the assistant's response from the OpenAI response object.
+            # Extract the assistant's response from the Groq response object
             assistant_message = response.choices[0].message.content
 
-            # Add the assistant's message to the chat history and display it.
+            # Add the assistant's message to the chat history and display it
             chatroom_messages.append({"role": "assistant", "icon": "🤖", "content": f"{assistant_message}"})
             write_chat_history(chatroom_messages)
 
@@ -153,7 +153,7 @@ else:
     # Copyright
     st.sidebar.caption("©️ Copyright 2024 J. Davis")
 
-    # Auto-refresh the chat every few seconds to show new messages.
+    # Auto-refresh the chat every few seconds to show new messages
     while True:
         time.sleep(UPDATE_INTERVAL)
         new_messages = read_chat_history()
