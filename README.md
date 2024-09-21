@@ -1,8 +1,8 @@
-# 🎈 Nurt
+# 🎈 Coin Dash
 
 A multithread chatbot where the chatbot only interacts when triggered by keyword.
 
-[![Open in Streamlit](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://nurt-ai.streamlit.app/)
+[![Open in Streamlit](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://coindash-agent.streamlit.app/)
 
 ### How to run it on your own machine
 
