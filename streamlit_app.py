@@ -50,7 +50,7 @@ def generate_user_icon(username):
 # Function to get Fetch.AI token price
 def get_fetchai_price():
     try:
-        url = "https://api.fetch.ai/market-price/v1/token/price/fetchai.fetch-ai"
+        url = "https://api.coindesk.com/v1/bpi/currentprice.json"
         response = requests.get(url)
         response.raise_for_status()
         data = response.json()
