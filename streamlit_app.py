@@ -154,7 +154,18 @@ else:
     user_icon = generate_user_icon(username)
 
     # Update user preferences
+    if not username:
+        st.error("Username is missing! Please enter a valid username.")
+        st.stop()
+    
+    # Update user preferences)
     user_preferences = read_user_preferences()
+    
+    # If user_preferences is not a dictionary, reinitialize it as an empty dictionary
+    if not isinstance(user_preferences, dict):
+        user_preferences = {}
+    
+    # Now you can safely add the username and preferences
     user_preferences[username] = {
         "interests": [interest.strip() for interest in user_interests.split(",")]
     }
