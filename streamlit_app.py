@@ -80,7 +80,8 @@ def get_fetchai_price():
 
         btc_price_usd = data['bpi']['USD']['rate']
         
-        os.write(1, b'btc_price_usd')
+        
+        os.write(1,b'BTC query was executed.\n')
 
         
         if data:
