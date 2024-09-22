@@ -8,6 +8,7 @@ import logging
 import requests
 
 GROQ_KEY = st.secrets["GROQ_KEY"]
+
 # Set up logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -22,7 +23,6 @@ for file in [CHAT_HISTORY_FILE, USER_PREFERENCES_FILE]:
         with open(file, "w") as f:
             json.dump([], f)
 
-# Function to read chat history from the file
 def read_chat_history():
     try:
         with open(CHAT_HISTORY_FILE, "r") as f:
@@ -35,7 +35,6 @@ def read_chat_history():
         logger.error(f"Error reading chat history: {str(e)}")
         return []
 
-# Function to write chat history to the file
 def write_chat_history(messages):
     try:
         with open(CHAT_HISTORY_FILE, "w") as f:
@@ -43,7 +42,6 @@ def write_chat_history(messages):
     except Exception as e:
         logger.error(f"Error writing chat history: {str(e)}")
 
-# Function to read user preferences from the file
 def read_user_preferences():
     try:
         with open(USER_PREFERENCES_FILE, "r") as f:
@@ -55,7 +53,6 @@ def read_user_preferences():
         logger.error(f"Error reading user preferences: {str(e)}")
         return {}
 
-# Function to write user preferences to the file
 def write_user_preferences(preferences):
     try:
         with open(USER_PREFERENCES_FILE, "w") as f:
@@ -63,14 +60,12 @@ def write_user_preferences(preferences):
     except Exception as e:
         logger.error(f"Error writing user preferences: {str(e)}")
 
-# Function to generate a unique emoji based on username
 def generate_user_icon(username):
     hash_value = int(hashlib.md5(username.encode()).hexdigest(), 16)
     emoji_index = hash_value % len(EMOJI_LIST)
     return EMOJI_LIST[emoji_index]
 
-# Function to get Fetch.AI token price
-def get_fetchai_price():
+def get_bitcoin_price():
     try:
         url = "https://api.coindesk.com/v1/bpi/currentprice.json"
         response = requests.get(url)
@@ -78,17 +73,9 @@ def get_fetchai_price():
         data = response.json()
         logger.info(f"API response: {data}")
 
-        btc_price_usd = data['bpi']['USD']['rate'].replace(',', '')  # Remove commas
-        btc_price_usd = float(btc_price_usd)  # Convert to float
-        
-        st.toast(btc_price_usd)
-
-        
-        if data:
-            return (f"Current Bitcoin price in USD: {btc_price_usd}")
-        else:
-            logger.error("Price key not found in API response")
-            return None
+        btc_price_usd = float(data['bpi']['USD']['rate'].replace(',', ''))
+        st.toast(f"Current Bitcoin price: ${btc_price_usd:.2f}")
+        return btc_price_usd
     except requests.RequestException as e:
         logger.error(f"Error fetching price: {str(e)}")
         return None
@@ -96,31 +83,30 @@ def get_fetchai_price():
         logger.error(f"Error parsing price: {str(e)}")
         return None
 
-# Function to make decisions based on user preferences and metadata
-def make_decision(user_preferences, fetchai_price):
+def make_decision(user_preferences, bitcoin_price):
     decision = "Based on your preferences, I recommend: "
-    
+
     if "investment" in user_preferences.get("interests", []):
-        if fetchai_price < 63000:
-            decision += "Consider investing in BTC tokens as the price is relatively low. "
+        if bitcoin_price and bitcoin_price < 63000:
+            decision += "Consider investing in Bitcoin as the price is relatively low. "
+        elif bitcoin_price:
+            decision += "Bitcoin price is relatively high, you might want to wait for a dip before investing. "
         else:
-            decision += "BTC price is relatively high, you might want to wait for a dip before investing. "
-    
+            decision += "Unable to provide investment advice due to unavailable price information. "
+
     if "technology" in user_preferences.get("interests", []):
         decision += "Explore the latest developments in AI and blockchain technology. "
-    
+
     if "health" in user_preferences.get("interests", []):
         decision += "Remember to take regular breaks and stay hydrated while using the chatbot. "
-    
+
     return decision
 
-# List of emojis to use
 EMOJI_LIST = [
     "🙂", "😎", "🤓", "😇", "😂", "😍", "🤡", "😃", "😅", "😎", 
     "😜", "🤗", "🤔", "😴", "😱", "😡", "🤠", "😈", "😇", "👻"
 ]
 
-# Setting page layout
 st.set_page_config(
     page_title="Enhanced Multi-Person Chatbot",
     page_icon="✨",
@@ -128,11 +114,10 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# Sidebar for API Key and User Info
 st.sidebar.header("About App")
-st.sidebar.markdown('This is an enhanced multi-person chatbot with Groq, capable of making decisions based on user preferences and using Fetch.AI data.', unsafe_allow_html=True)
+st.sidebar.markdown('This is an enhanced multi-person chatbot with Groq, capable of making decisions based on user preferences and using Bitcoin price data.', unsafe_allow_html=True)
 
-groq_api_key = GROQ_KEY #st.sidebar.text_input("Groq API Key", type="password")
+groq_api_key = GROQ_KEY
 username = st.sidebar.text_input("Enter your username:")
 user_interests = st.sidebar.text_area("Enter your interests (comma-separated):")
 
@@ -142,7 +127,6 @@ elif not username:
     st.sidebar.info("Please enter a username and interests to continue.", icon="🗣️")
 else:
     try:
-        # Create a Groq client
         client = Groq(api_key=groq_api_key)
         logger.info("Groq client created successfully")
     except Exception as e:
@@ -150,35 +134,27 @@ else:
         logger.error(f"Error creating Groq client: {str(e)}")
         st.stop()
 
-    # Generate a unique icon for the user
     user_icon = generate_user_icon(username)
 
-    # Update user preferences
     if not username:
         st.error("Username is missing! Please enter a valid username.")
         st.stop()
-    
-    # Update user preferences)
+
     user_preferences = read_user_preferences()
-    
-    # If user_preferences is not a dictionary, reinitialize it as an empty dictionary
+
     if not isinstance(user_preferences, dict):
         user_preferences = {}
-    
-    # Now you can safely add the username and preferences
+
     user_preferences[username] = {
         "interests": [interest.strip() for interest in user_interests.split(",")]
     }
     write_user_preferences(user_preferences)
 
-    # Load the chat history from the file
     chatroom_messages = read_chat_history()
 
-    # Show title and description
     st.title("Enhanced Multi-Person Chatbot")
     st.write("This is a multi-user chatroom with an AI chatbot capable of making decisions based on user preferences.")
 
-    # Display all chatroom messages with user icons and tooltips
     for message in chatroom_messages:
         icon = message.get("icon", "👤")
         content = message.get("content", "")
@@ -196,11 +172,9 @@ else:
             </div>
         """, unsafe_allow_html=True)
 
-    # Create a chat input field for user input
     prompt = st.chat_input("What's on your mind?")
 
     if prompt:
-        # Add the user's message to the chat history and display it
         new_message = {"role": "user", "icon": user_icon, "content": prompt, "sender_name": username}
         chatroom_messages.append(new_message)
         write_chat_history(chatroom_messages)
@@ -216,35 +190,29 @@ else:
             </div>
         """, unsafe_allow_html=True)
 
-        # Check if the prompt starts with "bot" or "decide"
         if prompt.lower().startswith("bot") or prompt.lower().startswith("decide"):
             try:
                 logger.info("Sending request to Groq API")
 
-                # Get Fetch.AI price
-                fetchai_price = get_fetchai_price()
-                fetchai_info = f"The current price of BTC is ${fetchai_price:.4f} USD. " if fetchai_price else "Price information is currently unavailable. "
-                logger.info(f"Price info: {fetchai_info}")
+                bitcoin_price = get_bitcoin_price()
+                bitcoin_info = f"The current price of Bitcoin is ${bitcoin_price:.2f} USD. " if bitcoin_price else "Price information is currently unavailable. "
+                logger.info(f"Price info: {bitcoin_info}")
 
-                # Make a decision based on user preferences
-                decision = make_decision(user_preferences[username], fetchai_price)
+                decision = make_decision(user_preferences[username], bitcoin_price)
 
-                # Generate a response using the Groq API
                 response = client.chat.completions.create(
                     model="llama3-8b-8192",
                     messages=[
                         {"role": m["role"], "content": m["content"]}
                         for m in chatroom_messages
-                    ] + [{"role": "system", "content": f"Include this information in your response: {fetchai_info} {decision}"}]
+                    ] + [{"role": "system", "content": f"Include this information in your response: {bitcoin_info} {decision}"}]
                 )
                 logger.info("Received response from Groq API")
 
-                # Extract the assistant's response from the Groq response object
                 assistant_message = response.choices[0].message.content
                 logger.info(f"Assistant message: {assistant_message}")
 
-                # Add the assistant's message to the chat history and display it
-                chatroom_messages.append({"role": "assistant", "icon": "🤖", "content": f"{assistant_message}"})
+                chatroom_messages.append({"role": "assistant", "icon": "🤖", "content": assistant_message})
                 write_chat_history(chatroom_messages)
 
                 st.markdown(f"""
@@ -261,7 +229,6 @@ else:
                 st.error(f"Error generating response: {str(e)}")
                 logger.error(f"Error generating response: {str(e)}")
 
-    # Calendly
     st.sidebar.markdown("""
         <hr />
         <center>
@@ -275,9 +242,7 @@ else:
         <br />
     """, unsafe_allow_html=True)
 
-    # Copyright
     st.sidebar.caption("©️ Copyright 2024 J. Davis")
 
-    # Rerun the app every UPDATE_INTERVAL seconds
     time.sleep(UPDATE_INTERVAL)
     st.rerun()
