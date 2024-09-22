@@ -79,7 +79,9 @@ def get_fetchai_price():
         logger.info(f"API response: {data}")
 
         btc_price_usd = data['bpi']['USD']['rate']
-        console.log(btc_price_usd)
+        
+        os.write(1, btc_price_usd)
+
         
         if data:
             return (f"Current Bitcoin price in USD: {btc_price_usd}")
