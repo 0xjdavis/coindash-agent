@@ -38,12 +38,22 @@ def generate_user_icon(username):
 # Function to get Bitcoin price using Fetch.AI
 def get_bitcoin_price():
     try:
-        url = "https://coinbase.fetchai.com/api/v1/latest?from=BTC&to=USD"
+        url = "https://api.fetch.ai/market-price/v1/token/price/fetchai.fetch-ai"
         response = requests.get(url)
+        response.raise_for_status()  # Raise an exception for bad status codes
         data = response.json()
-        return data['rates']['USD']
-    except Exception as e:
+        logger.info(f"Fetch.AI API response: {data}")
+        
+        if 'price' in data:
+            return float(data['price'])
+        else:
+            logger.error("Price key not found in API response")
+            return None
+    except requests.RequestException as e:
         logger.error(f"Error fetching Bitcoin price: {str(e)}")
+        return None
+    except (KeyError, ValueError) as e:
+        logger.error(f"Error parsing Bitcoin price: {str(e)}")
         return None
 
 # List of emojis to use
@@ -134,7 +144,8 @@ else:
                 
                 # Get Bitcoin price
                 btc_price = get_bitcoin_price()
-                btc_info = f"The current price of Bitcoin is ${btc_price:.2f} USD. " if btc_price else "Bitcoin price information is currently unavailable. "
+                btc_info = f"The current price of FETCH.AI is ${btc_price:.4f} USD. " if btc_price else "FETCH.AI price information is currently unavailable. "
+                logger.info(f"Bitcoin price info: {btc_info}")
                 
                 # Generate a response using the Groq API
                 response = client.chat.completions.create(
