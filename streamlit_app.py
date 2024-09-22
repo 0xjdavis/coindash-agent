@@ -89,10 +89,10 @@ def get_fetchai_price():
             logger.error("Price key not found in API response")
             return None
     except requests.RequestException as e:
-        logger.error(f"Error fetching Fetch.AI price: {str(e)}")
+        logger.error(f"Error fetching price: {str(e)}")
         return None
     except (KeyError, ValueError) as e:
-        logger.error(f"Error parsing Fetch.AI price: {str(e)}")
+        logger.error(f"Error parsing price: {str(e)}")
         return None
 
 # Function to make decisions based on user preferences and metadata
@@ -100,10 +100,10 @@ def make_decision(user_preferences, fetchai_price):
     decision = "Based on your preferences, I recommend: "
     
     if "investment" in user_preferences.get("interests", []):
-        if fetchai_price < 0.5:
-            decision += "Consider investing in Fetch.AI tokens as the price is relatively low. "
+        if fetchai_price < 63000:
+            decision += "Consider investing in BTC tokens as the price is relatively low. "
         else:
-            decision += "The Fetch.AI token price is relatively high, you might want to wait for a dip before investing. "
+            decision += "BTC price is relatively high, you might want to wait for a dip before investing. "
     
     if "technology" in user_preferences.get("interests", []):
         decision += "Explore the latest developments in AI and blockchain technology. "
