@@ -7,6 +7,8 @@ import hashlib
 import logging
 import requests
 
+GROQ_KEY = st.secrets["GROQ_KEY"]
+
 # Set up logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -104,7 +106,7 @@ st.set_page_config(
 st.sidebar.header("About App")
 st.sidebar.markdown('This is an enhanced multi-person chatbot with Groq, capable of making decisions based on user preferences and using Fetch.AI data.', unsafe_allow_html=True)
 
-groq_api_key = st.sidebar.text_input("Groq API Key", type="password")
+groq_api_key = GROQ_KEY # st.sidebar.text_input("Groq API Key", type="password")
 username = st.sidebar.text_input("Enter your username:")
 user_interests = st.sidebar.text_area("Enter your interests (comma-separated):")
 
