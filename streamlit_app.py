@@ -205,15 +205,15 @@ else:
             </div>
         """, unsafe_allow_html=True)
 
-        # Check if the prompt starts with "nurt" or "decide"
-        if prompt.lower().startswith("nurt") or prompt.lower().startswith("decide"):
+        # Check if the prompt starts with "bot" or "decide"
+        if prompt.lower().startswith("bot") or prompt.lower().startswith("decide"):
             try:
                 logger.info("Sending request to Groq API")
 
                 # Get Fetch.AI price
                 fetchai_price = get_fetchai_price()
-                fetchai_info = f"The current price of FETCH.AI is ${fetchai_price:.4f} USD. " if fetchai_price else "FETCH.AI price information is currently unavailable. "
-                logger.info(f"Fetch.AI price info: {fetchai_info}")
+                fetchai_info = f"The current price of BTC is ${fetchai_price:.4f} USD. " if fetchai_price else "Price information is currently unavailable. "
+                logger.info(f"Price info: {fetchai_info}")
 
                 # Make a decision based on user preferences
                 decision = make_decision(user_preferences[username], fetchai_price)
