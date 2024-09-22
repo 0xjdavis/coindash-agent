@@ -75,10 +75,11 @@ def get_fetchai_price():
         response = requests.get(url)
         response.raise_for_status()
         data = response.json()
-        logger.info(f"Fetch.AI API response: {data}")
-        
-        if 'price' in data:
-            return float(data['price'])
+        logger.info(f"API response: {data}")
+
+        btc_price_usd = data['bpi']['USD']['rate']
+        if btc_price_usd in data:
+            return (f"Current Bitcoin price in USD: {btc_price_usd}")
         else:
             logger.error("Price key not found in API response")
             return None
