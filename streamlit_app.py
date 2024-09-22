@@ -54,11 +54,12 @@ st.sidebar.markdown('This is a multithreaded chatbot with Groq, capable of itera
 
 groq_api_key = st.sidebar.text_input("Groq API Key", type="password")
 username = st.sidebar.text_input("Enter your username:")
+usermetadata = st.sidebar.text_area("outdoors, music, food")
 
 if not groq_api_key:
     st.sidebar.info("Please add your Groq API key to continue.", icon="🗝️")
 elif not username:
-    st.sidebar.info("Please enter a username to continue.", icon="🗣️")
+    st.sidebar.info("Please enter a username and interests to continue.", icon="🗣️")
 else:
     try:
         # Create a Groq client
