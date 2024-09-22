@@ -5,6 +5,7 @@ import os
 import time
 import hashlib
 import logging
+import requests
 
 # Set up logging
 logging.basicConfig(level=logging.INFO)
@@ -34,6 +35,17 @@ def generate_user_icon(username):
     emoji_index = hash_value % len(EMOJI_LIST)
     return EMOJI_LIST[emoji_index]
 
+# Function to get Bitcoin price using Fetch.AI
+def get_bitcoin_price():
+    try:
+        url = "https://coinbase.fetchai.com/api/v1/latest?from=BTC&to=USD"
+        response = requests.get(url)
+        data = response.json()
+        return data['rates']['USD']
+    except Exception as e:
+        logger.error(f"Error fetching Bitcoin price: {str(e)}")
+        return None
+
 # List of emojis to use
 EMOJI_LIST = [
     "🙂", "😎", "🤓", "😇", "😂", "😍", "🤡", "😃", "😅", "😎", 
@@ -50,7 +62,7 @@ st.set_page_config(
 
 # Sidebar for API Key and User Info
 st.sidebar.header("About App")
-st.sidebar.markdown('This is a multithreaded chatbot with Groq, capable of iteration where the chatbot only responds when triggered and usese function calling using Toolhouse.ai and Fetch.ai created by <a href="https://ai.jdavis.xyz" target="_blank">0xjdavis</a>.', unsafe_allow_html=True)
+st.sidebar.markdown('This is a multithreaded chatbot with Groq, capable of iteration where the chatbot only responds when triggered and uses function calling using Toolhouse.ai and Fetch.ai created by <a href="https://ai.jdavis.xyz" target="_blank">0xjdavis</a>.', unsafe_allow_html=True)
 
 groq_api_key = st.sidebar.text_input("Groq API Key", type="password")
 username = st.sidebar.text_input("Enter your username:")
@@ -119,13 +131,18 @@ else:
         if prompt.lower().startswith("nurt"):
             try:
                 logger.info("Sending request to Groq API")
+                
+                # Get Bitcoin price
+                btc_price = get_bitcoin_price()
+                btc_info = f"The current price of Bitcoin is ${btc_price:.2f} USD. " if btc_price else "Bitcoin price information is currently unavailable. "
+                
                 # Generate a response using the Groq API
                 response = client.chat.completions.create(
                     model="llama3-8b-8192",  # Updated model name
                     messages=[
                         {"role": m["role"], "content": m["content"]}
                         for m in chatroom_messages
-                    ],
+                    ] + [{"role": "system", "content": f"Include this information in your response: {btc_info}"}]
                 )
                 logger.info("Received response from Groq API")
 
