@@ -12,12 +12,14 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 CHAT_HISTORY_FILE = "chat_history.json"
+USER_PREFERENCES_FILE = "user_preferences.json"
 UPDATE_INTERVAL = 1  # seconds
 
-# Initialize the chat history file if it doesn't exist
-if not os.path.exists(CHAT_HISTORY_FILE):
-    with open(CHAT_HISTORY_FILE, "w") as f:
-        json.dump([], f)
+# Initialize the chat history and user preferences files if they don't exist
+for file in [CHAT_HISTORY_FILE, USER_PREFERENCES_FILE]:
+    if not os.path.exists(file):
+        with open(file, "w") as f:
+            json.dump({}, f)
 
 # Function to read chat history from the file
 def read_chat_history():
@@ -29,18 +31,28 @@ def write_chat_history(messages):
     with open(CHAT_HISTORY_FILE, "w") as f:
         json.dump(messages, f)
 
+# Function to read user preferences from the file
+def read_user_preferences():
+    with open(USER_PREFERENCES_FILE, "r") as f:
+        return json.load(f)
+
+# Function to write user preferences to the file
+def write_user_preferences(preferences):
+    with open(USER_PREFERENCES_FILE, "w") as f:
+        json.dump(preferences, f)
+
 # Function to generate a unique emoji based on username
 def generate_user_icon(username):
     hash_value = int(hashlib.md5(username.encode()).hexdigest(), 16)
     emoji_index = hash_value % len(EMOJI_LIST)
     return EMOJI_LIST[emoji_index]
 
-# Function to get Bitcoin price using Fetch.AI
-def get_bitcoin_price():
+# Function to get Fetch.AI token price
+def get_fetchai_price():
     try:
         url = "https://api.fetch.ai/market-price/v1/token/price/fetchai.fetch-ai"
         response = requests.get(url)
-        response.raise_for_status()  # Raise an exception for bad status codes
+        response.raise_for_status()
         data = response.json()
         logger.info(f"Fetch.AI API response: {data}")
         
@@ -50,11 +62,29 @@ def get_bitcoin_price():
             logger.error("Price key not found in API response")
             return None
     except requests.RequestException as e:
-        logger.error(f"Error fetching Bitcoin price: {str(e)}")
+        logger.error(f"Error fetching Fetch.AI price: {str(e)}")
         return None
     except (KeyError, ValueError) as e:
-        logger.error(f"Error parsing Bitcoin price: {str(e)}")
+        logger.error(f"Error parsing Fetch.AI price: {str(e)}")
         return None
+
+# Function to make decisions based on user preferences and metadata
+def make_decision(user_preferences, fetchai_price):
+    decision = "Based on your preferences, I recommend: "
+    
+    if "investment" in user_preferences.get("interests", []):
+        if fetchai_price < 0.5:
+            decision += "Consider investing in Fetch.AI tokens as the price is relatively low. "
+        else:
+            decision += "The Fetch.AI token price is relatively high, you might want to wait for a dip before investing. "
+    
+    if "technology" in user_preferences.get("interests", []):
+        decision += "Explore the latest developments in AI and blockchain technology. "
+    
+    if "health" in user_preferences.get("interests", []):
+        decision += "Remember to take regular breaks and stay hydrated while using the chatbot. "
+    
+    return decision
 
 # List of emojis to use
 EMOJI_LIST = [
@@ -64,7 +94,7 @@ EMOJI_LIST = [
 
 # Setting page layout
 st.set_page_config(
-    page_title="Multithread Chatbot with Groq llama3-8b-8192 model",
+    page_title="Enhanced Multi-Person Chatbot",
     page_icon="✨",
     layout="centered",
     initial_sidebar_state="expanded"
@@ -72,11 +102,11 @@ st.set_page_config(
 
 # Sidebar for API Key and User Info
 st.sidebar.header("About App")
-st.sidebar.markdown('This is a multithreaded chatbot with Groq, capable of iteration where the chatbot only responds when triggered and uses function calling using Toolhouse.ai and Fetch.ai created by <a href="https://ai.jdavis.xyz" target="_blank">0xjdavis</a>.', unsafe_allow_html=True)
+st.sidebar.markdown('This is an enhanced multi-person chatbot with Groq, capable of making decisions based on user preferences and using Fetch.AI data.', unsafe_allow_html=True)
 
 groq_api_key = st.sidebar.text_input("Groq API Key", type="password")
 username = st.sidebar.text_input("Enter your username:")
-usermetadata = st.sidebar.text_area("Enter your interests:")
+user_interests = st.sidebar.text_area("Enter your interests (comma-separated):")
 
 if not groq_api_key:
     st.sidebar.info("Please add your Groq API key to continue.", icon="🗝️")
@@ -95,12 +125,19 @@ else:
     # Generate a unique icon for the user
     user_icon = generate_user_icon(username)
 
+    # Update user preferences
+    user_preferences = read_user_preferences()
+    user_preferences[username] = {
+        "interests": [interest.strip() for interest in user_interests.split(",")]
+    }
+    write_user_preferences(user_preferences)
+
     # Load the chat history from the file
     chatroom_messages = read_chat_history()
 
     # Show title and description
-    st.title("Multithread Chatbot with Groq")
-    st.write("This is a multi-user chatroom where one participant is an AI chatbot.")
+    st.title("Enhanced Multi-Person Chatbot")
+    st.write("This is a multi-user chatroom with an AI chatbot capable of making decisions based on user preferences.")
 
     # Display all chatroom messages with user icons and tooltips
     for message in chatroom_messages:
@@ -137,23 +174,26 @@ else:
             </div>
         """, unsafe_allow_html=True)
 
-        # Check if the prompt starts with "nurt"
-        if prompt.lower().startswith("nurt"):
+        # Check if the prompt starts with "nurt" or "decide"
+        if prompt.lower().startswith("nurt") or prompt.lower().startswith("decide"):
             try:
                 logger.info("Sending request to Groq API")
-                
-                # Get Bitcoin price
-                btc_price = get_bitcoin_price()
-                btc_info = f"The current price of FETCH.AI is ${btc_price:.4f} USD. " if btc_price else "FETCH.AI price information is currently unavailable. "
-                logger.info(f"Bitcoin price info: {btc_info}")
-                
+
+                # Get Fetch.AI price
+                fetchai_price = get_fetchai_price()
+                fetchai_info = f"The current price of FETCH.AI is ${fetchai_price:.4f} USD. " if fetchai_price else "FETCH.AI price information is currently unavailable. "
+                logger.info(f"Fetch.AI price info: {fetchai_info}")
+
+                # Make a decision based on user preferences
+                decision = make_decision(user_preferences[username], fetchai_price)
+
                 # Generate a response using the Groq API
                 response = client.chat.completions.create(
-                    model="llama3-8b-8192",  # Updated model name
+                    model="llama3-8b-8192",
                     messages=[
                         {"role": m["role"], "content": m["content"]}
                         for m in chatroom_messages
-                    ] + [{"role": "system", "content": f"Include this information in your response: {btc_info}"}]
+                    ] + [{"role": "system", "content": f"Include this information in your response: {fetchai_info} {decision}"}]
                 )
                 logger.info("Received response from Groq API")
 
