@@ -7,7 +7,7 @@ import hashlib
 import logging
 import requests
 
-GROQ_KEY = st.secrets["GROQ_KEY]
+GROQ_KEY = st.secrets["GROQ_KEY"]
 # Set up logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
