@@ -78,7 +78,8 @@ def get_fetchai_price():
         data = response.json()
         logger.info(f"API response: {data}")
 
-        btc_price_usd = data['bpi']['USD']['rate']
+        btc_price_usd = data['bpi']['USD']['rate'].replace(',', '')  # Remove commas
+        btc_price_usd = float(btc_price_usd)  # Convert to float
         
         st.toast(btc_price_usd)
 
