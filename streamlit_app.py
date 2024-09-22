@@ -87,7 +87,7 @@ def make_decision(user_preferences, bitcoin_price):
     decision = "Based on your preferences, I recommend: "
 
     if "investment" in user_preferences.get("interests", []):
-        if bitcoin_price and bitcoin_price < 63000:
+        if bitcoin_price and bitcoin_price < 60000:
             decision += "Consider investing in Bitcoin as the price is relatively low. "
         elif bitcoin_price:
             decision += "Bitcoin price is relatively high, you might want to wait for a dip before investing. "
