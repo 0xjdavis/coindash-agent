@@ -97,9 +97,6 @@ def make_decision(user_preferences, bitcoin_price):
     if "technology" in user_preferences.get("interests", []):
         decision += "Explore the latest developments in AI and blockchain technology. "
 
-    if "health" in user_preferences.get("interests", []):
-        decision += "Remember to take regular breaks and stay hydrated while using the chatbot. "
-
     return decision
 
 EMOJI_LIST = [
@@ -108,7 +105,7 @@ EMOJI_LIST = [
 ]
 
 st.set_page_config(
-    page_title="Enhanced Multi-Person Chatbot",
+    page_title="Enhanced Multi-Person Chatbot with Function Calling",
     page_icon="✨",
     layout="centered",
     initial_sidebar_state="expanded"
