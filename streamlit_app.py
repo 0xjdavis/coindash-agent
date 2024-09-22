@@ -189,7 +189,8 @@ else:
 
                 # Generate a response using the Groq API
                 response = client.chat.completions.create(
-                    model="llama3-8b-8192",
+                    # model="llama3-8b-8192",
+                    model="llama3-groq-70b-8192-tool-use-preview",
                     messages=[
                         {"role": m["role"], "content": m["content"]}
                         for m in chatroom_messages
