@@ -50,11 +50,11 @@ st.set_page_config(
 
 # Sidebar for API Key and User Info
 st.sidebar.header("About App")
-st.sidebar.markdown('This is a multithreaded chatbot with Groq, capable of iteration where the chatbot only responds when triggered created by <a href="https://ai.jdavis.xyz" target="_blank">0xjdavis</a>.', unsafe_allow_html=True)
+st.sidebar.markdown('This is a multithreaded chatbot with Groq, capable of iteration where the chatbot only responds when triggered and usese function calling using Toolhouse.ai and Fetch.ai created by <a href="https://ai.jdavis.xyz" target="_blank">0xjdavis</a>.', unsafe_allow_html=True)
 
 groq_api_key = st.sidebar.text_input("Groq API Key", type="password")
 username = st.sidebar.text_input("Enter your username:")
-usermetadata = st.sidebar.text_area("outdoors, music, food")
+usermetadata = st.sidebar.text_area("Enter your interests:")
 
 if not groq_api_key:
     st.sidebar.info("Please add your Groq API key to continue.", icon="🗝️")
