@@ -112,7 +112,7 @@ st.set_page_config(
 )
 
 st.sidebar.header("About App")
-st.sidebar.markdown('This is an enhanced multi-person chatbot with Groq, capable of making decisions based on user preferences and using Bitcoin price data.', unsafe_allow_html=True)
+st.sidebar.markdown('This is a function enhanced multi-person chatbot with Groq, capable of making decisions based on user preferences and using Bitcoin price data.', unsafe_allow_html=True)
 
 groq_api_key = GROQ_KEY
 username = st.sidebar.text_input("Enter your username:")
@@ -150,7 +150,7 @@ else:
     chatroom_messages = read_chat_history()
 
     st.title("Function Enhanced Multi-Person Chatbot")
-    st.write("This is a multi-user chatroom with an financially savvy AI chatbot capable of making decisions based on user preferences.")
+    st.write("This is a function enhanced multi-user chatroom with an financially savvy AI chatbot capable of making decisions based on user preferences.")
 
     for message in chatroom_messages:
         icon = message.get("icon", "👤")
