@@ -149,8 +149,8 @@ else:
 
     chatroom_messages = read_chat_history()
 
-    st.title("Enhanced Multi-Person Chatbot")
-    st.write("This is a multi-user chatroom with an AI chatbot capable of making decisions based on user preferences.")
+    st.title("Function Enhanced Multi-Person Chatbot")
+    st.write("This is a multi-user chatroom with an financially savvy AI chatbot capable of making decisions based on user preferences.")
 
     for message in chatroom_messages:
         icon = message.get("icon", "👤")
