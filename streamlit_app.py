@@ -117,7 +117,7 @@ st.sidebar.markdown('This is a function enhanced multi-person chatbot with Groq,
 groq_api_key = GROQ_KEY
 username = st.sidebar.text_input("Enter your username:")
 user_btcusd_price_limit = st.sidebar.text_input("BTCUSD price alert:")
-user_preferences = st.sidebar.text_area("Enter your interests (comma-separated):")
+user_preferences = st.sidebar.text_area("Enter your prefered cryptos (comma-separated):")
 if not groq_api_key:
     st.sidebar.info("Please add your Groq API key to continue.", icon="🗝️")
 elif not username:
