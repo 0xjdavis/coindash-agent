@@ -86,7 +86,7 @@ def get_bitcoin_price():
 def make_decision(user_preferences, bitcoin_price):
     decision = "Based on your preferences, I recommend: "
 
-    if "investment" in user_preferences.get("interests", []):
+    if "investment" in user_preferences.get("preferences", []):
         if bitcoin_price and bitcoin_price < 60000:
             decision += "Consider investing in Bitcoin as the price is relatively low. "
         elif bitcoin_price:
@@ -94,7 +94,7 @@ def make_decision(user_preferences, bitcoin_price):
         else:
             decision += "Unable to provide investment advice due to unavailable price information. "
 
-    if "technology" in user_preferences.get("interests", []):
+    if "technology" in user_preferences.get("preferences", []):
         decision += "Explore the latest developments in AI and blockchain technology. "
 
     return decision
@@ -143,7 +143,7 @@ else:
         user_preferences = {}
 
     user_preferences[username] = {
-        "preferences": [interest.strip() for interest in user_interests.split(",")]
+        "preferences": [interest.strip() for interest in user_preferences.split(",")]
     }
     echo(user_preferences)
     write_user_preferences(user_preferences)
