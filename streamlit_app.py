@@ -117,11 +117,11 @@ st.sidebar.markdown('This is a function enhanced multi-person chatbot with Groq,
 groq_api_key = GROQ_KEY
 username = st.sidebar.text_input("Enter your username:")
 user_btcusd_price_limit = st.sidebar.text_input("BTCUSD price alert:")
-user_interests = st.sidebar.text_area("Enter your interests (comma-separated):")
+user_preferences = st.sidebar.text_area("Enter your interests (comma-separated):")
 if not groq_api_key:
     st.sidebar.info("Please add your Groq API key to continue.", icon="🗝️")
 elif not username:
-    st.sidebar.info("Please enter a username and interests to continue.", icon="🗣️")
+    st.sidebar.info("Please enter a username and favorite tokens to continue.", icon="🗣️")
 else:
     try:
         client = Groq(api_key=groq_api_key)
@@ -143,8 +143,9 @@ else:
         user_preferences = {}
 
     user_preferences[username] = {
-        "interests": [interest.strip() for interest in user_interests.split(",")]
+        "preferences": [interest.strip() for interest in user_interests.split(",")]
     }
+    echo(user_preferences)
     write_user_preferences(user_preferences)
 
     chatroom_messages = read_chat_history()
